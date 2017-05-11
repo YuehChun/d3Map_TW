@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<meta name="author" content="" />
+<meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<title>D3 Map In Taiwan</title>
+
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<link rel="stylesheet" href="leaflet.css" />
+<script src="leaflet.js"></script>
+<style>
+    #mapid { height: 180px; }
+</style>
+</head>
+<body>
+
+<div id='panel' style="display: none">
+    <span id='title'></span><br />
+</div>
+<div id="mapid"></div>
+<script>
+        var map = L.map('mapid').setView([51.505, -0.09], 13);
+
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+            maxZoom: 18,
+            id: 'birdtasi',
+            accessToken: 'pk.eyJ1IjoiYmlyZHRhc2kiLCJhIjoiY2l6ZXY1YThoMDAzMzMzbGI4enBmbXNqdSJ9.rAMuwqmYSDALNiaEbz7bwQ'
+        }).addTo(map);
+
+        L.marker([51.5, -0.09]).addTo(map)
+            .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+            .openPopup();
+</script>
+
+</body>
+</html>

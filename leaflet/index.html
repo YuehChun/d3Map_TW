@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<meta name="author" content="" />
+<meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<title>D3 Map In Taiwan</title>
+
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<link rel="stylesheet" href="leaflet.css" />
+<script src="leaflet.js"></script>
+<script type='text/javascript' src='tinycolor.js'></script>
+<style>
+#mapid {
+  width: 960px;
+  height: 500px;
+}
+</style>
+</head>
+<body>
+
+<div id='panel' style="display: none">
+    <span id='title'></span><br />
+</div>
+<div id="mapid"></div>
+<button name="ccc" id="ccc" class="ccc">click</button>
+<script>
+        var map = L.map('mapid').setView([25.037,121.660], 13);
+
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // MARKER 顯示
+        // L.marker([25.037,121.660]).addTo(map)
+        //     .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+        //     .openPopup();
+
+
+
+
+		// L.svg().addTo(map);
+        // map['_initPathRoot']();
+
+		var svg = d3.select(map.getPanes().overlayPane).append("svg");
+        g = svg.append("g").attr("class", "leaflet-zoom-hide");
+
+        g1 = g
+            .append("g")
+            .attr("class", "tour");
+
+
+        var data1 = d3.json("./data/bike.json", function(error, data) {
+            data.retVal.forEach(function(d) {
+                //console.log("d.lat : " +d.lat);
+                //console.log("d.lng : " +d.lng);
+
+                d.LatLng = new L.LatLng(d.lat,d.lng);
+                //console.log(d);
+            });
+
+            //console.log(data);
+
+            var feature = g.selectAll("circle")
+                .data(data.retVal)
+                .enter().append("circle")
+                .style("stroke", "black")
+                .style("opacity", .6)
+                //.style("fill", "red")
+                .attr("fill", function(d) {
+                    //console.log(data[d].ddd);
+                    var available_bike_percen_per_station  = d3.scale.linear()
+                        .domain([0, d.tot])
+                        .range([0,115]);
+                    a1 = tinycolor("hsv("+available_bike_percen_per_station(d.sbi)+", 100%, 100%)");
+                    a2 = a1.toHexString();
+                    return a2; })
+                .attr("r", function(d) {
+                    //return d.sbi/2;
+                    if (d.sbi == 0)
+                        return 5;
+                    else
+                        return Math.sqrt(d.sbi*30/3.14);
+                })
+                .attr("transform", function(d) {
+                    //console.log(d);
+                    //console.log(map.latLngToLayerPoint(d.LatLng).x);
+                    return "translate("+
+                        map.latLngToLayerPoint(d.LatLng).x +","+
+                        map.latLngToLayerPoint(d.LatLng).y +")";
+                })
+                .on("click", function(d){
+                    console.log("3123");
+                });
+            map.on("moveend", update);
+            //update();
+
+            function update() {
+                feature.attr("transform",
+                    function(data) {
+                        //console.log(d.LatLng);
+                        //console.log(map.latLngToLayerPoint(d.LatLng).x);
+                        return "translate("+
+                            map.latLngToLayerPoint(data.LatLng).x +","+
+                            map.latLngToLayerPoint(data.LatLng).y +")";
+                    }
+                );
+                //g1.selectAll("circle")
+                // g1.selectAll("image")
+                //     .attr("transform", function(d) {
+                //         //console.log(d);
+                //         //console.log(map.latLngToLayerPoint(d.LatLng).x);
+                //         return "translate("+
+                //             map.latLngToLayerPoint(d.LatLng).x +","+
+                //             map.latLngToLayerPoint(d.LatLng).y +")";
+                //     });
+
+                // g1.selectAll("text")
+                //     .attr("transform", function(d) {
+                //         //console.log(d);
+                //         //console.log(map.latLngToLayerPoint(d.LatLng).x);
+                //         return "translate("+
+                //             map.latLngToLayerPoint(d.LatLng).x +","+
+                //             map.latLngToLayerPoint(d.LatLng).y +")";
+                //     });
+                feature.on("click", function(d){
+                    console.log("1231234");
+                });
+            }
+
+            feature.on("click", function(d){
+                console.log("123123");
+            });
+        });
+
+        
+</script>
+
+</body>
+</html>

@@ -60,19 +60,34 @@ var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-var projection = d3.geo.mercator()
-    .center([121.660163,25.037222])
-    .scale(45000);
-
 // var projection = d3.geo.mercator()
-//     .center([121,24])
-//     .scale(8000);
+//     .center([121.524163,25.037222])
+//     .scale(12000);
+
+var projection = d3.geo.mercator()
+    .center([121,24])
+    .scale(8000);
 
 var path = d3.geo.path()
     .projection(projection);
 
 d3.json("./data_map/county.json", function(error, topology) {
     var g = svg.append("g");
+    
+    // d3.csv("cities2.csv", function(error, data) {
+    //     g.selectAll("circle")
+    //        .data(data)
+    //        .enter()
+    //        .append("circle")
+    //        .attr("cx", function(d) {
+    //                return projection([d.lon, d.lat])[0];
+    //        })
+    //        .attr("cy", function(d) {
+    //                return projection([d.lon, d.lat])[1];
+    //        })
+    //        .attr("r", 4)
+    //        .style("fill", "red");
+    // });
     d3.csv("test2.csv", function(error, data) {
         g.selectAll("circle")
            .data(data)
@@ -102,19 +117,17 @@ d3.json("./data_map/county.json", function(error, topology) {
           .enter()
           .append("path")
           .attr("d", path)
-          .attr("stroke", "black")
-          .attr("stroke-width", "1px")
           .attr({
                 d : path,
                 name : function(d) {
                     return d.properties["C_Name"];
                 },
-                fill : '#eafdd6'
+                fill : '#55AA00'
         });
     
     d3.select("svg").selectAll("path").on("mouseenter", function() {
         fill = $(this).attr("fill");
-        $(this).attr("fill", '#e3e3e3');
+        $(this).attr("fill", '#00DD77');
     
         $('#title').html($(this).attr("name"));
         $('#panel').css({
@@ -137,9 +150,6 @@ d3.json("./data_map/county.json", function(error, topology) {
     });
 
 });
-var lineGroup = {};
-lineGroup[1]=[];
-lineGroup[2]=[];
 d3.select('.ccc').on('click', function(){
     var line = d3.svg.line()
         .interpolate("cardinal")
@@ -150,64 +160,44 @@ d3.select('.ccc').on('click', function(){
             return d.y;
         });
     var g = svg.append("g");
-    d3.csv("test15.csv", function(error, data) {
+    d3.csv("test2.csv", function(error, data) {
         var maxval = d3.max(data, function(d) { return d._weight;} );
-        var color_i = d3.interpolateLab("#D6F5D6", "#066F06");
-        // var color = d3.scale.linear()
-        //     .range(["#D6F5D6","#32CD32","#0ea90e","#066f06"])
-        //     .interpolate(d3.interpolateHcl);
+        var i = d3.interpolateLab("white", "black");
+        console.log(i(0.5));
         g.selectAll("path")
             .data(data)
             .enter()
             .append("path")
             .attr("d", function(d){
+                    console.log(d);
                     var tempData=[
                         { x : projection([d.l_lon, d.l_lat])[0] , y : projection([d.l_lon, d.l_lat])[1]},
                         { x : projection([d.c_lon, d.c_lat])[0] , y : projection([d.c_lon, d.c_lat])[1]}
                     ];
                     return line(tempData);
                 })
-            .attr("stroke", function(d){ return color_i(d._weight/maxval);})
+            .attr("stroke", function(d){ return i(d._weight/maxval);})
             .attr("stroke-width", "2px")
-            .attr("fill", function(d){ 
-                if(d._time in lineGroup){
-                    lineGroup[d._time].push(d3.select(this));
-                }else{
-                    lineGroup[d._time] = [d3.select(this)];
-                }
-                return color_i(d._weight/maxval);
-            })
+            .attr("fill", function(d){ return i(d._weight/maxval);})
             .attr("stroke-dasharray", function(){
                 return d3.select(this).node().getTotalLength() + " " + d3.select(this).node().getTotalLength();
             })
             .attr("stroke-dashoffset", function(){ 
                 return d3.select(this).node().getTotalLength();
+            })
+            .transition()
+            .duration(100)
+            .ease("linear")
+            .attr("stroke-dashoffset", 0)
+            .transition()
+            .duration(200)
+            .ease("linear")
+            .attr("stroke-dashoffset", function(){ 
+                return -d3.select(this).node().getTotalLength();
+            })
+            .each('end', function(){
+                d3.select(this).remove();        
             });
-            
-            var movetime=0;
-            for (var key in lineGroup) {
-                var arrayLength = lineGroup[key].length;
-                movetime++;
-                for (var j = 0; j < arrayLength; j++) {
-                    var _tmp_path = lineGroup[key][j];
-                    _tmp_path.transition()
-                    .delay(movetime*1000)
-                    .duration(500)
-                    .ease("linear")
-                    .attr("stroke-dashoffset", 0)
-                    .transition()
-                    .delay(movetime*1000)
-                    .duration(1200)
-                    .ease("linear")
-                    .attr("stroke-dashoffset", function(){ 
-                        return -d3.select(this).node().getTotalLength();
-                    })
-                    .each('end', function(){
-                        d3.select(this).remove();        
-                    })
-                    .delay();
-                }
-            }
     });
 });
 
